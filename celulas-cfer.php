@@ -60,24 +60,29 @@ function cfer_add_metadata(){
 function cfer_celula_options(){
     global $post;
     $custom     =   get_post_custom( $post->ID );
-    $day        =   $custom[ 'day' ][0];
-    $hour       =   $custom[ 'hour' ][1];
-    $address    =   $custom[ 'address' ][2];
-    $phone      =   $custom[ 'phone' ][3];
+    $day        =   $custom[ 'cfer_day' ][0];
+    $hour       =   $custom[ 'cfer_hour' ][0];
+    $address    =   $custom[ 'cfer_address' ][0];
+    $phone      =   $custom[ 'cfer_phone' ][0];
 
     ?>
     <div class="cfer-metadata-groups">
         <div class="cfer-control-group">
             <label for="cfer_day">Día</label>
+            <?php if ( strlen( $day ) > 1 ) { ?>
+            <input type="text" name="cfer_day" id="cfer_day" value="<?php echo $day; ?>"/>
+            <?php } else { ?>
             <select name="cfer_day" id="cfer_day" value="<?php echo $day; ?>">
-                <option value="Sunday">Sunday</option>
+                <option value=""></option>
                 <option value="Monday">Monday</option>
                 <option value="Thuesday">Thuesday</option>
                 <option value="Wednesday">Wednesday</option>
                 <option value="Thursday">Thursday</option>
                 <option value="Friday">Friday</option>
                 <option value="Saturday">Saturday</option>
+                <option value="Sunday">Sunday</option>
             </select>
+            <?php } ?>
         </div>
         <div class="cfer-control-group">
             <label for="cfer_hour">Hora</label>
@@ -97,10 +102,10 @@ function cfer_celula_options(){
 
 function cfer_save_metadata(){
     global $post;
-    update_post_meta( $post->ID, 'day', $_POST[ 'cfer_day' ] );
-    update_post_meta( $post->ID, 'hour', $_POST[ 'cfer_hour' ] );
-    update_post_meta( $post->ID, 'address', $_POST[ 'cfer_address' ] );
-    update_post_meta( $post->ID, 'phone', $_POST[ 'cfer_phone' ] );
+    update_post_meta( $post->ID, 'cfer_day', $_POST[ 'cfer_day' ] );
+    update_post_meta( $post->ID, 'cfer_hour', $_POST[ 'cfer_hour' ] );
+    update_post_meta( $post->ID, 'cfer_address', $_POST[ 'cfer_address' ] );
+    update_post_meta( $post->ID, 'cfer_phone', $_POST[ 'cfer_phone' ] );
 }
 
 //      Register administration screen panel
@@ -108,6 +113,47 @@ add_action( 'admin_menu', 'cfer_celulas_menu' );
 function cfer_celulas_menu() {
 	add_menu_page( 'CFER Celulas', 'CFER Celulas', 'cfer_celulas_manage_options', 'cfer_celula', 'cfer_celulas_options' );
 }
+
+add_filter("manage_edit-cfer_celula_columns", "cfer_celula_edit_columns");
+add_action("manage_posts_custom_column",  "cfer_celula_custom_columns");
+
+function cfer_celula_edit_columns($columns){
+    unset(
+        $columns['categories'],
+        $columns['date']
+	);
+    $new_columns = array(
+        "title" => "Leader",
+        "category" => "Category",
+        "address" => "Address",
+        "phone" => "Phone",
+        'date' => "Date"
+    );
+    return array_merge($columns, $new_columns);
+}
+function cfer_celula_custom_columns($column){
+    global $post;
+    switch ($column) {
+        case "category":
+            echo get_the_term_list($post->ID, 'category', '', ', ',''); 
+            break;
+        case "address":
+            $custom = get_post_custom();
+            echo $custom[ 'cfer_address' ][0];
+            break;
+        case "phone":
+            $custom = get_post_custom();
+            echo $custom[ 'cfer_phone' ][0];
+            break;
+    }
+}
+
+//      Enqueue CSS files for administration screen panel
+function cfer_custom_styles($hook) {
+    if($hook != ('post-new.php' || 'post.php' )) { return; }
+    wp_enqueue_style( 'custom_wp_admin_css', plugins_url('/css/style.css', __FILE__) );
+}
+add_action( 'admin_enqueue_scripts', 'cfer_custom_styles' );
 
 //      Register shortcodes
 // ...

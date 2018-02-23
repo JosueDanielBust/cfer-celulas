@@ -1,0 +1,17 @@
+.cfer-metadata-groups {
+    display: flex;
+    flex-direction: column;
+    padding: 0 3rem;
+}
+
+.cfer-metadata-groups .cfer-control-group {
+    display: flex;
+    margin: 0.5rem 0;
+}
+.cfer-metadata-groups label {
+    min-width: 20%;
+}
+.cfer-metadata-groups select,
+.cfer-metadata-groups input[type="text"] {
+    flex-grow: 1;
+}

@@ -6,12 +6,12 @@ module.exports =  function(grunt) {
 		copy: {
 			main: {
 				expand: true,
-				src: ['*.php', 'views/*.*'],
+				src: ['*.php', 'views/*.*', 'css/*.css'],
 				dest: '/Applications/MAMP/htdocs/wp-content/plugins/celulas-cfer/',
 			},
 		},
 		watch: {
-			files: ['*.*', 'views/*.*'],
+			files: ['*.*', 'views/*.*', 'css/*.css'],
 			tasks: ['copy'],
 			options: {
 				event: ['all'],
