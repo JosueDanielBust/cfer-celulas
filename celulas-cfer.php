@@ -114,8 +114,8 @@ function cfer_celulas_menu() {
 	add_menu_page( 'CFER Celulas', 'CFER Celulas', 'cfer_celulas_manage_options', 'cfer_celula', 'cfer_celulas_options' );
 }
 
-add_filter("manage_edit-cfer_celula_columns", "cfer_celula_edit_columns");
-add_action("manage_posts_custom_column",  "cfer_celula_custom_columns");
+add_filter( 'manage_edit-cfer_celula_columns', 'cfer_celula_edit_columns' );
+add_action( 'manage_posts_custom_column',  'cfer_celula_custom_columns' );
 
 function cfer_celula_edit_columns($columns){
     unset(
@@ -123,25 +123,25 @@ function cfer_celula_edit_columns($columns){
         $columns['date']
 	);
     $new_columns = array(
-        "title" => "Leader",
-        "category" => "Category",
-        "address" => "Address",
-        "phone" => "Phone",
-        'date' => "Date"
+        'title'     =>  'Leader',
+        'category'  =>  'Category',
+        'address'   =>  'Address',
+        'phone'     =>  'Phone',
+        'date'      =>  'Date'
     );
     return array_merge($columns, $new_columns);
 }
 function cfer_celula_custom_columns($column){
     global $post;
     switch ($column) {
-        case "category":
+        case 'category':
             echo get_the_term_list($post->ID, 'category', '', ', ',''); 
             break;
-        case "address":
+        case 'address':
             $custom = get_post_custom();
             echo $custom[ 'cfer_address' ][0];
             break;
-        case "phone":
+        case 'phone':
             $custom = get_post_custom();
             echo $custom[ 'cfer_phone' ][0];
             break;
@@ -149,13 +149,70 @@ function cfer_celula_custom_columns($column){
 }
 
 //      Enqueue CSS files for administration screen panel
-function cfer_custom_styles($hook) {
+function cfer_custom_admin_styles($hook) {
     if($hook != ('post-new.php' || 'post.php' )) { return; }
-    wp_enqueue_style( 'custom_wp_admin_css', plugins_url('/css/style.css', __FILE__) );
+    wp_enqueue_style( 'cfer_celulas_custom_admin_css', plugins_url('/css/style.css', __FILE__) );
 }
-add_action( 'admin_enqueue_scripts', 'cfer_custom_styles' );
+add_action( 'admin_enqueue_scripts', 'cfer_custom_admin_styles' );
+
+function cfer_custom_styles() {
+    wp_enqueue_style( 'cfer_celulas_custom_css', plugins_url('/css/style.css', __FILE__) );
+}
+add_action( 'wp_enqueue_scripts', 'cfer_custom_styles' );
 
 //      Register shortcodes
-// ...
+//      [cfer_celula showas="grid" category="category-slug"]
+function cfer_celula_generator( $category, $type ) {
+    $args = array(
+        'post_type'     =>  'cfer_celula',
+        'category_name' =>  $category
+    );
+    $the_query = new WP_Query( $args );
+    $class_type = 'cfer_' . $type; ?>
+    
+    
+    <div class="cfer_celulas <?php echo $class_type; ?>"> <?php
+    
+    if ( $the_query->have_posts() ) {
+        while ( $the_query->have_posts() ) : $the_query->the_post();
+            $custom = get_post_custom( get_the_ID() );
+            $phone = $custom[ 'cfer_phone' ][0];
+            if ( iconv_strlen($phone) <= 8 ) {
+                $phone = '+57 (4) ' . $custom[ 'cfer_phone' ][0];
+            } else {
+                $phone = '+57 ' . $custom[ 'cfer_phone' ][0];
+            }
+            ?>
+            <div class="cfer_celula_item">
+                <div class="cfer_image"><?php the_post_thumbnail('medium'); ?></div>
+                <div class="cfer_info">
+                    <p class="cfer-leader"><a href="<?php the_permalink() ?>"><?php the_title(); ?></a></p>
+                    <p class="cfer-date"><?php echo $custom[ 'cfer_day' ][0] . " - " . $custom[ 'cfer_hour' ][0] ?></p>
+                    <p class="cfer-phone"><?php echo $phone ?></p>
+                    <p class="cfer-address"><?php echo $custom[ 'cfer_address' ][0] ?></p>
+                </div>
+            </div>
+        <?php endwhile;
+        wp_reset_postdata();
+    } else { ?><h2>Nothing found...</h2><?php } ?>
+
+    </div> <?php
+}
+
+function cfer_celula_shortcode( $atts ) {
+    $a = shortcode_atts( array(
+        'showas'    =>  'grid',
+        'category'  =>  '',
+    ), $atts );
+    switch ($a[ 'showas' ]) {
+        case 'grid':
+            cfer_celula_generator( $a[ 'category' ], 'grid' );
+            break;
+        case 'list':
+            cfer_celula_generator( $a[ 'category' ], 'list' );
+            break;
+    }
+}
+add_shortcode( 'cfer_celula', 'cfer_celula_shortcode' );
 
 ?>
