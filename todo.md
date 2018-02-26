@@ -1,4 +1,5 @@
 ToDo List
 ---
 
-- Create a taxonomy only for plugin
+- [x] Create a taxonomy only for plugin
+- [ ] When show all items, separate by categories and show their name

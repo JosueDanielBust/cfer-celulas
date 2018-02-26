@@ -42,12 +42,25 @@ function create_celula_post_type() {
         'rest_base'     =>  'celula',
         'menu_icon'     =>  'dashicons-groups',
         'rewrite'       =>  array('slug' => 'celula'),
-        'taxonomies'    =>  array( 'category' ),
+        'taxonomies'    =>  array( 'cfer_category' ),
         'supports'      =>  array( 'title', 'thumbnail' ),
         )
     );
 }
+function create_celula_taxonomy() {
+	register_taxonomy(
+		'cfer_category',
+		'cfer_celula',
+		array(
+            'public'            =>  true,
+            'hierarchical'      =>  true,
+            'label'             =>  __( 'Category' ),
+        )
+	);
+}
 add_action( 'init', 'create_celula_post_type' );
+add_action( 'init', 'create_celula_taxonomy' );
+register_taxonomy_for_object_type( 'cfer_category', 'cfer_celula' );
 
 //      Register custom metadata for custom post type
 add_action( 'admin_init', 'cfer_add_metadata' );
@@ -135,7 +148,7 @@ function cfer_celula_custom_columns($column){
     global $post;
     switch ($column) {
         case 'category':
-            echo get_the_term_list($post->ID, 'category', '', ', ',''); 
+            echo get_the_term_list($post->ID, 'cfer_category', '', ', ',''); 
             break;
         case 'address':
             $custom = get_post_custom();
@@ -165,7 +178,13 @@ add_action( 'wp_enqueue_scripts', 'cfer_custom_styles' );
 function cfer_celula_generator( $category, $type ) {
     $args = array(
         'post_type'     =>  'cfer_celula',
-        'category_name' =>  $category
+        'tax_query'     =>  array(
+            array(
+                'taxonomy'  =>  'cfer_category',
+                'field'     =>  'slug',
+                'terms'     =>  $category,
+            ),
+        ),
     );
     $the_query = new WP_Query( $args );
     $class_type = 'cfer_' . $type; ?>
