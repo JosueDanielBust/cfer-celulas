@@ -6,13 +6,18 @@ module.exports =  function(grunt) {
 		copy: {
 			main: {
 				expand: true,
-				src: ['*.php', 'views/*.*', 'css/*.css'],
+				src: ['*.php', 'css/*.css'],
 				dest: '/Applications/MAMP/htdocs/wp-content/plugins/celulas-cfer/',
 			},
+			dist: {
+				expand: true,
+				src: ['*.php', 'css/*.css', 'readme.md'],
+				dest: 'dist/',
+			}
 		},
 		watch: {
-			files: ['*.*', 'views/*.*', 'css/*.css'],
-			tasks: ['copy'],
+			files: ['*.*', 'css/*.css'],
+			tasks: ['copy:main'],
 			options: {
 				event: ['all'],
 				dateFormat: function(time) {
@@ -24,4 +29,5 @@ module.exports =  function(grunt) {
 	});
 
 	grunt.registerTask('default', ['watch']);
+	grunt.registerTask('dist', ['copy:dist']);
 };
